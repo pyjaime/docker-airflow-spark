@@ -1,0 +1,93 @@
+# Verify volumes
+version: "3.8"
+services:  
+    # Postgres used by Airflow
+    postgres:
+        image: postgres:13.6
+        networks:
+            - default_net
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+        volumes:
+            - "../sandbox/postgres:/var/lib/postgresql/data"
+        ports:
+            - "5432:5432"
+
+    # Airflow LocalExecutor
+    airflow-webserver:
+        image: docker-airflow2:latest
+        restart: always
+        networks:
+            - default_net
+        depends_on:
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+        volumes:
+            - ../sandbox/dags:/usr/local/airflow/dags # DAGs folder
+            - ../sandbox/spark/app:/usr/local/spark/app # Spark Scripts (same path in airflow and spark)
+            - ../sandbox/spark/resources:/usr/local/spark/resources # Spark Resources (same path in airflow and spark)
+        ports:
+            - "8080:8080" #host:container
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    # Spark with N workers
+    spark-master:
+        image: bitnami/spark:3.2.1
+        #user: root # Run container as root container: https://docs.bitnami.com/tutorials/work-with-non-root-containers/
+        hostname: spark
+        networks:
+            - default_net
+        environment:
+            - SPARK_MODE=master
+            - SPARK_RPC_AUTHENTICATION_ENABLED=no
+            - SPARK_RPC_ENCRYPTION_ENABLED=no
+            - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+            - SPARK_SSL_ENABLED=no
+        volumes:
+            - ../sandbox/spark/app:/usr/local/spark/app # Scripts (same path in airflow and spark)
+            - ../sandbox/spark/resources:/usr/local/spark/resources # Resources (same path in airflow and spark)
+        ports:
+            - "8081:8080"
+            - "7077:7077"
+
+    spark-worker:
+        image: bitnami/spark:3.2.1
+        #user: root
+        networks:
+            - default_net
+        environment:
+            - SPARK_MODE=worker
+            - SPARK_MASTER_URL=spark://spark:7077
+            - SPARK_WORKER_MEMORY=1G
+            - SPARK_WORKER_CORES=1
+            - SPARK_RPC_AUTHENTICATION_ENABLED=no
+            - SPARK_RPC_ENCRYPTION_ENABLED=no
+            - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+            - SPARK_SSL_ENABLED=no
+        volumes:
+            - ../sandbox/spark/app:/usr/local/spark/app # Scripts (same path in airflow and spark)
+            - ../sandbox/spark/resources:/usr/local/spark/resources # Resources (same path in airflow and spark)
+
+    # Jupyter Notebooks
+    jupyter-pyspark:
+        image: jupyter/pyspark-notebook:spark-3.2.1 # pyspark
+        #image: jupyter/all-spark-notebook:spark-3.2.1 # scala
+        #image: jupyter/datascience-notebook:latest # julia 
+        networks:
+            - default_net
+        ports:
+          - "8888:8888"
+        volumes:
+          - ../sandbox/notebooks:/home/jovyan/work/notebooks/
+
+networks:
+    default_net:
