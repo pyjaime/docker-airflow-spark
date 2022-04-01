@@ -56,7 +56,7 @@ We will create the folder easily:
   
 ### Create a test user for Airflow
   
-    $ docker-compose run airflow-webserver airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin![image](https://user-images.githubusercontent.com/2597522/161334730-aaaae9f5-7ff7-4958-83b4-cc465e4b627a.png)
+    $ docker-compose run airflow-webserver airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin
 
 ### Edit connection from Airflow to Spark
 
