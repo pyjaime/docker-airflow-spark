@@ -1,7 +1,7 @@
 # docker-airflow-spark
 Docker with Airflow + Postgres + Spark cluster + JDK (spark-submit support) + Jupyter Notebooks
 
-## The Containers
+## 📦 The Containers
 
 * airflow-webserver: Airflow webserver and scheduler, with spark-submit support.
     * image: docker-airflow2:latest (custom, Airflow version 2.2.4)
@@ -23,7 +23,7 @@ Docker with Airflow + Postgres + Spark cluster + JDK (spark-submit support) + Ju
     * image: jupyter/pyspark-notebook:spark-3.2.1
     * port: 8888
 
-## Setup
+## 🛠 Setup
 
 ### Clone project
 
@@ -52,7 +52,7 @@ We will create the folder easily:
 * Spark Master: http://localhost:8081
 * Jupyter Notebook: http://localhost:8888 (follow the instructions to get a token)
   
-## Additional steps
+## 👣 Additional steps
   
 ### Create a test user for Airflow
   
@@ -70,6 +70,6 @@ We will create the folder easily:
   
 Go to the Airflow UI and run the test_spark_submit_operator DAG :)
 
-## A big thank you
+##  A big thank you
 
 THANK YOU [Thiago Cordon](https://github.com/cordon-thiago) 
